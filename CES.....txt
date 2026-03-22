@@ -1,0 +1,170 @@
+﻿Todas as demais configurações devem ficar dentro da aba “Editar Conteúdo”. ADM mais limpo, organizado e profissional, mantendo todas as funções. O ADM deve permitir: Criar/editar/excluir qualquer conteúdo do site. Criar/editar/excluir administradores. Mostrar o nome e foto do admin logado. Upload direto do PC para fotos, vídeos, documentos e planilhas (somente via ADM). Criar inscrições manualmente; alterar status (confirmada / pendente / cancelada). Criar campanhas (SMS, WhatsApp, e-mail) individual, em grupo ou em massa. Exportar CSV, PDFs e planilhas. Criar gráficos de leads, vendas, origem, conversões, gastos e resultados. Alterar fontes (opção exclusiva do ADM). Inscrições (Correção do problema) Atualmente as inscrições NÃO aparecem no ADM. Correção obrigatória: Ao enviar o formulário “Quero Participar” no site principal, os dados devem ser gravados no Firestore. O painel ADM deve receber essa inscrição em tempo real, usando listeners (ex: onSnapshot). Nada de refresh manual. Todas as informações devem ter timestamps e status. Firebase Integrar: • Authentication • Firestore (tempo real) • Firebase Storage (para uploads do ADM) Requisitos: Toda edição do ADM deve ir para Firestore e refletir no site principal instantaneamente. Uploads do ADM → Storage → URL salva no Firestore → atualização imediata no site principal. Validar regras de segurança e integrações. Salvamento no ADM Correção obrigatória: O ADM deve salvar absolutamente tudo no Firestore: textos, imagens, vídeos, configurações, ordens das seções, conteúdo dinâmico, etc. Cada alteração deve refletir no site principal em tempo real. CRUD Completo Todas as seções devem ter incluir, editar e excluir de: • textos • títulos • imagens • vídeos • botões • ordem das seções • dados de timeline • valores • líderes • bônus • tudo Nada pode ser fixo. Validação Completa Antes de gerar o projeto final, validar: Fluxo de inscrição → Firestore → ADM em tempo real Edição no ADM → Firestore → Site principal em tempo real Uploads → Storage → Firestore → Site principal CRUD geral Login e permissões Campanhas Gráficos Sincronia total entre ADM e site principal  ► Instalação npm install firebase       ✅ Configuração completa do SDK Firebase // Import the functions you need from the SDKs you need import { initializeApp } from "firebase/app"; import { getAnalytics } from "firebase/analytics"; // TODO: Add SDKs for Firebase products that you want to use // https://firebase.google.com/docs/web/setup#available-libraries // Your web app's Firebase configuration // For Firebase JS SDK v7.20.0 and later, measurementId is optional const firebaseConfig = {   apiKey: "AIzaSyD5DaWFN16WeY6TYEHcn0IVyq8ObzHbYgY",   authDomain: "cesbrasil-85898.firebaseapp.com",   databaseURL: "https://cesbrasil-85898-default-rtdb.firebaseio.com",   projectId: "cesbrasil-85898",   storageBucket: "cesbrasil-85898.firebasestorage.app",   messagingSenderId: "443274031096",   appId: "1:443274031096:web:1ba713cbcb41178c77700d",   measurementId: "G-L24WSEHWXC" }; // Initialize Firebase const app = initializeApp(firebaseConfig); const analytics = getAnalytics(app);  regra rules_version = '2'; service cloud.firestore {   match /databases/{database}/documents {     // FUNÇÃO CORRIGIDA FINAL:     // O caminho está correto, mas o problema é a recursão na regra de leitura de 'users'.     function isAdmin() {       // 1. Verifica se o usuário está autenticado.       // 2. Tenta obter o documento do usuário.       // 3. Verifica se o campo 'admin' é true.       // Esta função depende da regra 'match /users/{userId}' para permitir o 'get()'.       return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.admin == true;     }     // Regra para a coleção 'unidades'     match /unidades/{unidadeId} {       allow read, write: if isAdmin();     }     // Regra para a coleção 'reservas'     match /reservas/{reservaId} {       allow read, write: if isAdmin();     }     // Regra para a coleção de usuários     match /users/{userId} {         // SOLUÇÃO PARA RECURSÃO:         // O 'get()' dentro de 'isAdmin()' é uma operação de leitura.         // Para que o 'get()' funcione, a regra de leitura DEVE ser resolvida SEM chamar 'isAdmin()'.         // Portanto, a regra de leitura deve ser apenas para o próprio usuário.         allow read: if request.auth.uid == userId;         // A escrita pode usar isAdmin() para permitir que um admin edite outros usuários.         allow write: if isAdmin() || request.auth.uid == userId;     }     // Regra de fallback: nega acesso a todas as outras coleções por padrão, exceto para admins     match /{document=**} {       allow read, write: if isAdmin();     }   } }
+ 
+inclusive o logo
+* Crie um site/app completo, moderno, responsivo e totalmente editável para a CESBRASIL, seguindo exatamente todas as instruções abaixo.
+
+O site principal deve ser visualmente IDÊNTICO ao layout desta URL:
+
+ https://readdy.ai/project/946bade3-ff70-4a4d-99a2-2c0df4f9b504   e a pagina adm semelhante a essa https://readdy.link/preview/beb1cf26-7aa7-4035-b1a3-3983e298f7a7/4501142/admin 
+
+Não alterar layout, cores, espaçamentos ou estilos — apenas melhorar a responsividade mobile.
+
+   * Conteúdo
+Usar exclusivamente conteúdos do site https://missao.cesbrasil.tech.
+Todos os textos devem ser exatamente iguais aos textos do site Missão, sem alterações de sentido, estrutura ou intenção.
+Também devem ser usados os textos obrigatórios deste prompt.
+   * Design
+Layout tecnológico, moderno e responsivo.
+Usar imagens reais da CES como placeholders.
+Manter fonte atual do layout e o logo “Brasil” em branco.
+Nada no layout visual pode ser modificado além de correções responsivas.
+   * Banner Principal
+Vídeo de fundo em loop, silencioso:
+ https://www.youtube.com/watch?v=Wy6-p71zSLU&t=10s
+ Manter textos e CTAs sobre o vídeo.
+Botão “Ver no YouTube” deve ser pequeno.
+   * Responsividade
+O site principal e o ADM devem funcionar perfeitamente em:
+• Mobile (principal)
+• Tablet
+• Desktop
+Em modo vertical e horizontal.
+Não alterar componentes, apenas melhorar o comportamento responsivo.
+   * CMS Completo
+Nada pode ficar fixo no código.
+Todo conteúdo — textos, imagens, vídeos, timeline, líderes, bônus, valores, ícones, botões, seções e estrutura — deve ser 100% editável via ADM.
+Alterações devem atualizar o site principal em tempo real, sem refresh.
+   * Painel ADM
+Seguir o layout:
+ https://readdy.link/preview/beb1cf26-7aa7-4035-b1a3-3983e298f7a7/4501142/admin
+ Todas as demais configurações devem ficar dentro da aba “Editar Conteúdo”.
+O ADM deve ser limpo, organizado e profissional.
+      * O ADM deve permitir:
+
+• Criar/editar/excluir qualquer conteúdo.
+
+• Criar/editar/excluir administradores.
+
+• Exibir nome e foto do admin logado.
+
+• Fazer upload de imagens, vídeos e arquivos via ADM.
+
+• Criar inscrições manualmente e alterar status.
+
+• Enviar campanhas (SMS, WhatsApp, e-mail) individual, em grupo ou em massa.
+
+• Exportar CSV, PDFs e planilhas.
+
+• Gerar gráficos automáticos (leads, vendas, origem, conversões, gastos).
+
+• Alterar fontes (opção exclusiva do ADM).
+
+         * Inscrições
+Correção obrigatória: o formulário “Quero Participar” deve gravar os dados no Firestore.
+O ADM deve receber as inscrições em tempo real via onSnapshot.
+Sem refresh manual.
+Todas as inscrições devem conter timestamp e status.
+         * Firebase
+Integrar: Authentication, Firestore (tempo real), Storage, Analytics.
+Tudo que for alterado no ADM deve atualizar o Firestore e refletir no site instantaneamente.
+Uploads → Storage → URL no Firestore → atualização imediata no site.
+Aplicar regras de segurança.
+         * Salvamento no ADM
+Todo conteúdo deve ser salvo no Firestore: textos, imagens, vídeos, configurações, ordem das seções e qualquer item dinâmico.
+Nada pode ser estático.
+Atualização sempre em tempo real.
+         * CRUD Completo
+Todas as seções devem permitir incluir, editar e excluir:
+• textos, títulos, imagens, vídeos, botões
+• ordem das seções
+• dados de timeline
+• valores
+• líderes
+• bônus
+• qualquer outro conteúdo
+Nenhum elemento pode ser fixo.
+         * Validações
+Antes de finalizar o projeto, validar:
+• Inscrição → Firestore → ADM em tempo real
+• Edição no ADM → Firestore → Site principal em tempo real
+• Uploads → Storage → Firestore → Site
+• CRUD geral
+• Login e permissões
+• Campanhas
+• Gráficos
+• Sincronia total ADM ↔ site
+         * Informações do Firebase
+Instalação:
+npm install firebase
+            * Configuração SDK Firebase:
+
+(Manter exatamente o código fornecido no prompt original, sem alterações.)
+
+Serviços obrigatórios: Authentication, Firestore ou RTDB, Storage, Analytics.
+
+Coleções obrigatórias: administradores, cadastros, settings/conteúdo.
+
+Usuários existentes no Authentication:
+
+admin@cesbrasil.tech
+
+henrique@cesbrasil.tech
+
+pedro@cesbrasil.tech
+
+ 
+
+ 
+
+✅ Instalação
+
+  
+
+npm install firebase
+
+ 
+
+✅ Configuração completa do SDK Firebase
+
+  
+
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+ // Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyD5DaWFN16WeY6TYEHcn0IVyq8ObzHbYgY",
+  authDomain: "cesbrasil-85898.firebaseapp.com",
+  databaseURL: "https://cesbrasil-85898-default-rtdb.firebaseio.com",
+  projectId: "cesbrasil-85898",
+  storageBucket: "cesbrasil-85898.firebasestorage.app",
+  messagingSenderId: "443274031096",
+  appId: "1:443274031096:web:1ba713cbcb41178c77700d",
+  measurementId: "G-L24WSEHWXC"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+
+ 
+
+✅ Serviços obrigatórios
+
+               *                *  
+
+✅ Coleções obrigatórias
+
+                  * administradores
+                  * cadastros (inscrições do formulário “Quero Participar”)
+                  * settings / conteúdo do site (todo o conteúdo editável)
+                  *  
+
+✅ Usuários existentes no Authentication
+
+                     * admin@cesbrasil.tech
+                     * henrique@cesbrasil.tech
